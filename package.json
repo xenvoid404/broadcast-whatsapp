@@ -7,7 +7,16 @@
         "start": "node index.js",
         "dev": "pnpm start"
     },
-    "keywords": ["whatsapp", "baileys", "broadcast", "bot", "whatsapp-bot", "group-link", "sqlite", "sequelize"],
+    "keywords": [
+        "whatsapp",
+        "baileys",
+        "broadcast",
+        "bot",
+        "whatsapp-bot",
+        "group-link",
+        "sqlite",
+        "sequelize"
+    ],
     "author": "Xenvoid 404",
     "license": "MIT",
     "engines": {
@@ -17,6 +26,7 @@
     "dependencies": {
         "@whiskeysockets/baileys": "^6.7.18",
         "dotenv": "^17.2.0",
+        "pino": "^9.7.0",
         "qrcode-terminal": "^0.12.0",
         "sequelize": "^6.37.7",
         "sqlite3": "^5.1.7"
