@@ -3,7 +3,7 @@ const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = requi
 const qrcode = require('qrcode-terminal');
 const pino = require('pino');
 const fs = require('fs');
-const { GroupLink } = require('models/GroupLink');
+const { GroupLink } = require('./models/GroupLink');
 
 const adminJid = process.env.ADMIN_JID;
 const groupThreshold = parseInt(process.env.GROUP_THRESHOLD);

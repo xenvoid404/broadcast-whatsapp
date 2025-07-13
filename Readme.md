@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Node.js](https://img.shields.io/badge/Node.js-v18%2B-green?logo=node.js)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-v22%2B-green?logo=node.js)](https://nodejs.org/)
 [![Baileys](https://img.shields.io/badge/Baileys-WhatsApp%20API-blue)](https://github.com/WhiskeySockets/Baileys)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
@@ -51,32 +51,23 @@ cd broadcast-whatsapp
 
 > **💡 Tip**: Gunakan PNPM untuk performa yang lebih baik!
 
-<details>
-<summary>🟢 PNPM (Recommended)</summary>
+PNPM (Recommended)
 
 ```bash
 pnpm install
 ```
 
-</details>
-
-<details>
-<summary>🔵 NPM</summary>
+NPM
 
 ```bash
 npm install
 ```
 
-</details>
-
-<details>
-<summary>🟠 Yarn</summary>
+Yarn
 
 ```bash
 yarn install
 ```
-
-</details>
 
 #### 3️⃣ Konfigurasi Environment
 
@@ -161,16 +152,15 @@ broadcast-whatsapp/
 
 ### 🔄 Workflow Save Link Grup
 
-```mermaid
-graph LR
-    A[Pesan Masuk] --> B{Mengandung Link Grup?}
-    B -->|Ya| C[Simpan ke Database]
-    B -->|Tidak| D[Abaikan]
-    C --> E{Jumlah ≥ Threshold?}
-    E -->|Ya| F[Kirim ke Admin]
-    E -->|Tidak| G[Tunggu Link Berikutnya]
-    F --> H[Reset Counter]
-```
+1. **Pesan Masuk** → Bot menerima pesan baru
+2. **Cek Link Grup** → Apakah mengandung link grup WhatsApp?
+    - ✅ **Ya**: Lanjut ke step 3
+    - ❌ **Tidak**: Abaikan pesan
+3. **Simpan ke Database** → Link grup disimpan (jika belum ada)
+4. **Cek Threshold** → Apakah jumlah link ≥ batas yang ditentukan?
+    - ✅ **Ya**: Kirim semua link ke admin
+    - ❌ **Tidak**: Tunggu link berikutnya
+5. **Reset Counter** → Setelah dikirim ke admin, reset penghitung
 
 ### 🧲 Contoh Link yang Terdeteksi
 
