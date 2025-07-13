@@ -1,0 +1,248 @@
+# 📢 Broadcast WhatsApp Bot
+
+<div align="center">
+
+[![Node.js](https://img.shields.io/badge/Node.js-v18%2B-green?logo=node.js)](https://nodejs.org/)
+[![Baileys](https://img.shields.io/badge/Baileys-WhatsApp%20API-blue)](https://github.com/WhiskeySockets/Baileys)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+
+Bot WhatsApp otomatis berbasis [Baileys](https://github.com/WhiskeySockets/Baileys) untuk broadcast pesan massal ke group yang tergabung, dengan fitur anti-spam.
+
+</div>
+
+---
+
+## ✨ Fitur Utama
+
+-   🔍 **Deteksi Otomatis**: Mendeteksi dan menyimpan link grup WhatsApp (`chat.whatsapp.com`) dari pesan masuk (grup dan personal) untuk kebutuhan broadcast ataupun promosi.
+-   📤 **Notifikasi Admin**: Mengirim link yang terkumpul ke admin, ketika sudah mencapai ambang batas.
+-   📢 **Broadcast Massal**: Mengirim pesan teks ke semua grup yang tergabung.
+-   🛡️ **Anti Spam**: Delay acak antar pengiriman untuk menghindari deteksi spam.
+
+---
+
+## 🛠️ Tech Stack
+
+<div align="center">
+  
+![Node.js](https://img.shields.io/badge/-Node.js-339933?logo=node.js&logoColor=white)
+![Baileys](https://img.shields.io/badge/-Baileys-25D366?logo=whatsapp&logoColor=white)
+![Sequelize](https://img.shields.io/badge/-Sequelize-52B0E7?logo=sequelize&logoColor=white)
+![SQLite](https://img.shields.io/badge/-SQLite-003B57?logo=sqlite&logoColor=white)
+![Docker](https://img.shields.io/badge/-Docker-2496ED?logo=docker&logoColor=white)
+
+</div>
+
+---
+
+## 📦 Instalasi
+
+### 🚀 Instalasi Manual
+
+#### 1️⃣ Clone Repository
+
+```bash
+git clone https://github.com/username/broadcast-whatsapp.git
+cd broadcast-whatsapp
+```
+
+#### 2️⃣ Install Dependencies
+
+> **💡 Tip**: Gunakan PNPM untuk performa yang lebih baik!
+
+<details>
+<summary>🟢 PNPM (Recommended)</summary>
+
+```bash
+pnpm install
+```
+
+</details>
+
+<details>
+<summary>🔵 NPM</summary>
+
+```bash
+npm install
+```
+
+</details>
+
+<details>
+<summary>🟠 Yarn</summary>
+
+```bash
+yarn install
+```
+
+</details>
+
+#### 3️⃣ Konfigurasi Environment
+
+Buat file `.env` di root directory:
+
+```env
+# 🔑 Konfigurasi Admin
+ADMIN_JID=628xxxxxxxxxx@s.whatsapp.net
+
+# 📊 Pengaturan Threshold
+GROUP_THRESHOLD=5
+
+# ⏰ Pengaturan Delay (milliseconds)
+DELAY_MIN=10000
+DELAY_MAX=60000
+```
+
+> **📋 Penjelasan Variabel:**
+>
+> -   `ADMIN_JID`: Nomor WhatsApp admin (format JID)
+> -   `GROUP_THRESHOLD`: Jumlah link minimal sebelum dikirim ke admin
+> -   `DELAY_MIN/MAX`: Range delay acak antar broadcast
+
+#### 4️⃣ Jalankan Bot
+
+```bash
+pnpm start    # atau npm start / yarn start
+```
+
+---
+
+### 🐳 Instalasi via Docker
+
+#### 1️⃣ Build & Run Container
+
+```bash
+docker compose up -d --build
+```
+
+#### 2️⃣ Verifikasi Container
+
+```bash
+docker ps
+docker logs -f broadcast-whatsapp
+```
+
+> **⚠️ Penting**: Pastikan file `.env` sudah ada di direktori root sebelum menjalankan Docker!
+
+---
+
+## 📁 Struktur Project
+
+```
+broadcast-whatsapp/
+├── 📁 auth/                   # Sesi login Baileys (auto-generated)
+├── 📁 models/
+│   └── 📄 GroupLink.js        # Model Sequelize untuk link grup
+├── 📄 index.js                # Entry point utama
+├── 📄 .env                    # Konfigurasi environment
+├── 📄 Dockerfile              # Docker build configuration
+├── 📄 docker-compose.yml      # Docker compose setup
+├── 📄 package.json            # Dependencies & scripts
+└── 📄 README.md               # Dokumentasi ini
+```
+
+---
+
+## 🎮 Perintah Admin
+
+| Perintah  | Fungsi                     |
+| --------- | -------------------------- |
+| `/bcast`  | Memulai sesi broadcast     |
+| `/cancel` | Membatalkan sesi broadcast |
+
+---
+
+### 📢 Workflow Broadcast
+
+1. Admin kirim `/bcast`
+2. Bot meminta pesan teks
+3. Pesan dikirim ke semua grup dengan delay acak
+
+### 🔄 Workflow Save Link Grup
+
+```mermaid
+graph LR
+    A[Pesan Masuk] --> B{Mengandung Link Grup?}
+    B -->|Ya| C[Simpan ke Database]
+    B -->|Tidak| D[Abaikan]
+    C --> E{Jumlah ≥ Threshold?}
+    E -->|Ya| F[Kirim ke Admin]
+    E -->|Tidak| G[Tunggu Link Berikutnya]
+    F --> H[Reset Counter]
+```
+
+### 🧲 Contoh Link yang Terdeteksi
+
+```
+https://chat.whatsapp.com/ABCdefGHIjklMNOpqrstuv
+https://chat.whatsapp.com/XYZ123abc456DEF789ghi
+```
+
+---
+
+## 🤝 Berkontribusi
+
+Kami terbuka untuk kontribusi! Beberapa ide pengembangan:
+
+-   🖼️ Broadcast media (gambar/dokumen)
+-   🗃️ Dukungan database eksternal (PostgreSQL/MySQL)
+-   📢 Auto broadcast dengan cron
+
+**Langkah kontribusi:**
+
+1. **Fork** repository ini
+2. **Create** branch fitur (`git checkout -b feature/AmazingFeature`)
+3. **Commit** perubahan (`git commit -m 'Add some AmazingFeature'`)
+4. **Push** ke branch (`git push origin feature/AmazingFeature`)
+5. **Open** Pull Request
+
+---
+
+## 📊 Stats
+
+<div align="center">
+
+![GitHub stars](https://img.shields.io/github/stars/xenvoid404/broadcast-whatsapp?style=social)
+![GitHub forks](https://img.shields.io/github/forks/xenvoid404/broadcast-whatsapp?style=social)
+![GitHub issues](https://img.shields.io/github/issues/xenvoid404/broadcast-whatsapp)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/xenvoid404/broadcast-whatsapp)
+
+</div>
+
+---
+
+## 📜 Lisensi
+
+Distributed under the [MIT License](LICENSE). See `LICENSE` for more information.
+
+```
+MIT License - Bebas digunakan, dimodifikasi, dan dibagikan.
+Jangan lupa berikan atribusi yang sesuai! 🙏
+```
+
+---
+
+## 👨‍💻 Author
+
+<div align="center">
+
+**🛰️ Xenvoid 404**
+
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/xenvoid404)
+
+</div>
+
+---
+
+<div align="center">
+
+**⭐ Jika project ini membantu, berikan star ya! ⭐**
+
+**💬 Ada pertanyaan? Silakan buka [Issues](https://github.com/username/broadcast-whatsapp/issues)**
+
+---
+
+_Made with ❤️ by Xenvoid 404_
+
+</div>

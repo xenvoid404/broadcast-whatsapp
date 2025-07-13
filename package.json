@@ -1,0 +1,24 @@
+{
+    "name": "broadcast-whatsapp",
+    "version": "1.0.0",
+    "description": "Bot WhatsApp berbasis Baileys untuk menyimpan link grup dan broadcast ke semua grup WhatsApp.",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "dev": "pnpm start"
+    },
+    "keywords": ["whatsapp", "baileys", "broadcast", "bot", "whatsapp-bot", "group-link", "sqlite", "sequelize"],
+    "author": "Xenvoid 404",
+    "license": "MIT",
+    "engines": {
+        "node": ">=18"
+    },
+    "packageManager": "pnpm@10.12.1",
+    "dependencies": {
+        "@whiskeysockets/baileys": "^6.7.18",
+        "dotenv": "^17.2.0",
+        "qrcode-terminal": "^0.12.0",
+        "sequelize": "^6.37.7",
+        "sqlite3": "^5.1.7"
+    }
+}

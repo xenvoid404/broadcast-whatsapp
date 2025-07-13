@@ -1,0 +1,20 @@
+services:
+    broadcast-whatsapp:
+        container_name: broadcast-whatsapp
+        build: .
+        restart: always
+        volumes:
+            - .:/app
+            - auth:/app/auth
+        working_dir: /app
+        command: ['pnpm', 'start']
+        tty: true
+        environment:
+            - NODE_ENV=production
+            - ADMIN_JID=${ADMIN_JID}
+            - GROUP_THRESHOLD=${GROUP_THRESHOLD}
+            - DELAY_MIN=${DELAY_MIN}
+            - DELAY_MAX=${DELAY_MAX}
+
+volumes:
+    auth:
