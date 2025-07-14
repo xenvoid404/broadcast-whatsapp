@@ -130,7 +130,7 @@ async function startSock() {
 
         await addNewLink(sock, text);
 
-        const from = msg.key.remoteJid;
+        const from = msg.key.participant || msg.key.remoteJid;
         const command = text.trim();
 
         if (from === adminJid) {
