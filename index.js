@@ -114,7 +114,7 @@ async function startSock() {
     const sock = makeWASocket({
         auth: state,
         printQRInTerminal: false,
-        logger: pino({ level: 'debug' })
+        logger: pino({ level: 'info' })
     });
 
     sock.ev.on('creds.update', saveCreds);
@@ -140,7 +140,7 @@ async function startSock() {
             isAdmin: from === adminJid
         });
 
-        if (from === adminJid) {
+        if (from?.trim() === adminJid?.trim()) {
             if (command.startsWith('/bcast')) {
                 broadcastState.waiting = true;
                 broadcastState.lastActivity = Date.now();
