@@ -114,7 +114,7 @@ async function startSock() {
     const sock = makeWASocket({
         auth: state,
         printQRInTerminal: false,
-        logger: pino({ level: 'error' })
+        logger: pino({ level: 'debug' })
     });
 
     sock.ev.on('creds.update', saveCreds);
@@ -132,6 +132,13 @@ async function startSock() {
 
         const from = msg.key.participant || msg.key.remoteJid;
         const command = text.trim();
+
+        console.log({
+            command,
+            from,
+            adminJid,
+            isAdmin: from === adminJid
+        });
 
         if (from === adminJid) {
             if (command.startsWith('/bcast')) {
