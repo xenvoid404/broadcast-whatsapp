@@ -43,7 +43,7 @@ Bot WhatsApp otomatis berbasis [Baileys](https://github.com/WhiskeySockets/Baile
 #### 1️⃣ Clone Repository
 
 ```bash
-git clone https://github.com/username/broadcast-whatsapp.git
+git clone https://github.com/xenvoid404/broadcast-whatsapp.git
 cd broadcast-whatsapp
 ```
 
@@ -229,7 +229,7 @@ Jangan lupa berikan atribusi yang sesuai! 🙏
 
 **⭐ Jika project ini membantu, berikan star ya! ⭐**
 
-**💬 Ada pertanyaan? Silakan buka [Issues](https://github.com/username/broadcast-whatsapp/issues)**
+**💬 Ada pertanyaan? Silakan buka [Issues](https://github.com/xenvoid404/broadcast-whatsapp/issues)**
 
 ---
 
