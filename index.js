@@ -114,12 +114,12 @@ async function startSock() {
     const sock = makeWASocket({
         auth: state,
         printQRInTerminal: false,
-        logger: pino({ level: 'info' })
+        logger: pino({ level: 'error' })
     });
 
     sock.ev.on('creds.update', saveCreds);
 
-    sock.ev.on('message.upsert', async ({ messages, type }) => {
+    sock.ev.on('messages.upsert', async ({ messages, type }) => {
         if (type !== 'notify') return;
 
         const msg = messages[0];
@@ -133,14 +133,7 @@ async function startSock() {
         const from = msg.key.participant || msg.key.remoteJid;
         const command = text.trim();
 
-        console.log({
-            command,
-            from,
-            adminJid,
-            isAdmin: from === adminJid
-        });
-
-        if (from?.trim() === adminJid?.trim()) {
+        if (from === adminJid?.trim) {
             if (command.startsWith('/bcast')) {
                 broadcastState.waiting = true;
                 broadcastState.lastActivity = Date.now();
