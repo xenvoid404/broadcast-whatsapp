@@ -133,7 +133,7 @@ async function startSock() {
         const from = msg.key.participant || msg.key.remoteJid;
         const command = text.trim();
 
-        if (from === adminJid?.trim) {
+        if (from === adminJid) {
             if (command.startsWith('/bcast')) {
                 broadcastState.waiting = true;
                 broadcastState.lastActivity = Date.now();
