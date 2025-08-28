@@ -1,3 +1,6 @@
+ignoredBuiltDependencies:
+  - sqlite3
+
 onlyBuiltDependencies:
   - '@whiskeysockets/baileys'
   - protobufjs

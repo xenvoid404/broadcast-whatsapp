@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-Bot WhatsApp otomatis berbasis [Baileys](https://github.com/WhiskeySockets/Baileys) untuk broadcast pesan massal ke group yang tergabung, dengan fitur anti-spam.
+Bot WhatsApp otomatis berbasis [Baileys](https://github.com/WhiskeySockets/Baileys) untuk menyimpan link grup dan broadcast ke semua grup WhatsApp.
 
 </div>
 
@@ -19,6 +19,7 @@ Bot WhatsApp otomatis berbasis [Baileys](https://github.com/WhiskeySockets/Baile
 -   📤 **Notifikasi Admin**: Mengirim link yang terkumpul ke admin, ketika sudah mencapai ambang batas.
 -   📢 **Broadcast Massal**: Mengirim pesan teks ke semua grup yang tergabung.
 -   🛡️ **Anti Spam**: Delay acak antar pengiriman untuk menghindari deteksi spam.
+-   ⏰ **Broadcast Terjadwal**: Mengirim pesan otomatis berdasarkan jadwal yang telah ditentukan.
 
 ---
 
@@ -83,6 +84,14 @@ GROUP_THRESHOLD=5
 # ⏰ Pengaturan Delay (milliseconds)
 DELAY_MIN=10000
 DELAY_MAX=60000
+
+# 🕰️ Broadcast Terjadwal
+# Format: menit jam tanggal bulan hari_dalam_minggu
+BROADCAST_SCHEDULE_1="0 8 * * *"          # Setiap hari jam 08:00
+BROADCAST_MESSAGE_FILE_1="messages/promo_pagi.txt"
+
+BROADCAST_SCHEDULE_2="0 17 * * *"         # Setiap hari jam 17:00
+BROADCAST_MESSAGE_FILE_2="messages/promo_sore.txt"
 ```
 
 > **📋 Penjelasan Variabel:**
@@ -90,6 +99,8 @@ DELAY_MAX=60000
 > -   `ADMIN_JID`: Nomor WhatsApp admin (format JID)
 > -   `GROUP_THRESHOLD`: Jumlah link minimal sebelum dikirim ke admin
 > -   `DELAY_MIN/MAX`: Range delay acak antar broadcast
+> -   `BROADCAST_SCHEDULE_*`: Jadwal broadcast otomatis menggunakan cron format
+> -   `BROADCAST_MESSAGE_FILE_*`: Path ke file pesan untuk broadcast terjadwal
 
 #### 4️⃣ Jalankan Bot
 
@@ -122,10 +133,10 @@ docker logs -f broadcast-whatsapp
 
 ```
 broadcast-whatsapp/
-├── 📁 auth/                   # Sesi login Baileys (auto-generated)
-├── 📁 models/
-│   └── 📄 GroupLink.js        # Model Sequelize untuk link grup
-├── 📄 index.js                # Entry point utama
+├── 📁 auth/                    # Sesi login Baileys (auto-generated)
+├── 📁 messages/                # File pesan untuk broadcast terjadwal
+├── 📄 app.js                  # Entry point utama
+├── 📄 GroupLink.js            # Model database Sequelize
 ├── 📄 .env                    # Konfigurasi environment
 ├── 📄 Dockerfile              # Docker build configuration
 ├── 📄 docker-compose.yml      # Docker compose setup
@@ -135,22 +146,7 @@ broadcast-whatsapp/
 
 ---
 
-## 🎮 Perintah Admin
-
-| Perintah  | Fungsi                     |
-| --------- | -------------------------- |
-| `/bcast`  | Memulai sesi broadcast     |
-| `/cancel` | Membatalkan sesi broadcast |
-
----
-
-### 📢 Workflow Broadcast
-
-1. Admin kirim `/bcast`
-2. Bot meminta pesan teks
-3. Pesan dikirim ke semua grup dengan delay acak
-
-### 🔄 Workflow Save Link Grup
+## 🔄 Workflow Save Link Grup
 
 1. **Pesan Masuk** → Bot menerima pesan baru
 2. **Cek Link Grup** → Apakah mengandung link grup WhatsApp?

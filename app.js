@@ -3,33 +3,29 @@ const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = requi
 const qrcode = require('qrcode-terminal');
 const pino = require('pino');
 const fs = require('fs');
-const { GroupLink } = require('./models/GroupLink');
+const path = require('path');
+const cron = require('node-cron');
+const { sequelize } = require('./database/setup.js');
+const { GroupLink } = require('./database/models/group-link.js');
 
+// Validasi variabel lingkungan
 const adminJid = process.env.ADMIN_JID;
-const groupThreshold = parseInt(process.env.GROUP_THRESHOLD);
-const delayMin = parseInt(process.env.DELAY_MIN);
-const delayMax = parseInt(process.env.DELAY_MAX);
+const groupThreshold = parseInt(process.env.GROUP_THRESHOLD) || 5;
+const delayMin = parseInt(process.env.DELAY_MIN) || 10000;
+const delayMax = parseInt(process.env.DELAY_MAX) || 60000;
 
 if (!adminJid) {
     console.error('❌ ADMIN_JID belum diset di .env');
     process.exit(1);
 }
 
-if (isNaN(groupThreshold) || groupThreshold <= 0) {
-    console.error('❌ GROUP_THRESHOLD tidak valid');
-    process.exit(1);
-}
+// Sinkronisasi database
+sequelize
+    .sync()
+    .then(() => console.log('Database dan tabel sudah siap!'))
+    .catch(err => console.error('Gagal menyiapkan database: ', err));
 
-if (isNaN(delayMin) || isNaN(delayMax) || delayMin < 1000 || delayMax < delayMin) {
-    console.error('❌ DELAY_MIN dan DELAY_MAX tidak valid');
-    process.exit(1);
-}
-
-const broadcastState = {
-    waiting: false,
-    lastActivity: null
-};
-
+// Fungsi utilitas
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -38,7 +34,8 @@ function randomDelay() {
     return Math.floor(Math.random() * (delayMax - delayMin + 1)) + delayMin;
 }
 
-async function addNewLink(sock, text) {
+// Fungsi untuk menyimpan link grup
+async function addNewLink(text) {
     const regex = /https?:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]{22}/g;
     const links = text.match(regex);
     if (!links) return;
@@ -52,26 +49,9 @@ async function addNewLink(sock, text) {
             is_sent_to_admin: false
         });
     }
-
-    const unsent = await GroupLink.findAll({
-        where: { is_sent_to_admin: false },
-        limit: groupThreshold
-    });
-
-    if (unsent.length >= groupThreshold) {
-        const list = unsent.map((l, i) => `${i + 1}. ${l.link}`).join('\n');
-        const message = `📥 Link grup terkumpul:\n\n${list}`;
-
-        try {
-            await sock.sendMessage(adminJid, { text: message });
-            await GroupLink.update({ is_sent_to_admin: true }, { where: { is_sent_to_admin: false } });
-            console.log(`📤 ${unsent.length} link dikirim ke admin.`);
-        } catch (err) {
-            console.error('❌ Gagal kirim ke admin:', err.message);
-        }
-    }
 }
 
+// Fungsi untuk broadcast pesan
 async function broadcastText(sock, text, groupIds, groups) {
     for (const groupId of groupIds) {
         try {
@@ -109,6 +89,53 @@ async function broadcastText(sock, text, groupIds, groups) {
     }
 }
 
+// Setup broadcast terjadwal
+function setupScheduledBroadcasts(sock) {
+    Object.keys(process.env).forEach(key => {
+        if (key.startsWith('BROADCAST_SCHEDULE_')) {
+            const scheduleId = key.split('_').pop();
+            const schedule = process.env[key];
+            const messageFileKey = `BROADCAST_MESSAGE_FILE_${scheduleId}`;
+            const messageFilePath = process.env[messageFileKey];
+
+            if (!schedule || !messageFilePath) {
+                console.warn(`⚠️ Konfigurasi tidak lengkap untuk jadwal ${scheduleId}. Schedule dan Message File harus ada.`);
+                return;
+            }
+
+            if (!cron.validate(schedule)) {
+                console.error(`❌ Jadwal cron tidak valid untuk ${key}: "${schedule}"`);
+                return;
+            }
+
+            const absoluteMessagePath = path.resolve(messageFilePath);
+            if (!fs.existsSync(absoluteMessagePath)) {
+                console.error(`❌ File pesan tidak ditemukan untuk ${messageFileKey}: "${absoluteMessagePath}"`);
+                return;
+            }
+
+            console.log(`🕰️ Penjadwalan broadcast [${scheduleId}] diaktifkan: "${schedule}"`);
+            cron.schedule(schedule, async () => {
+                console.log(`🚀 Menjalankan broadcast terjadwal [${scheduleId}]...`);
+                try {
+                    const message = fs.readFileSync(absoluteMessagePath, 'utf-8');
+                    const groups = await sock.groupFetchAllParticipating();
+                    const groupIds = Object.keys(groups);
+
+                    await broadcastText(sock, message, groupIds, groups);
+
+                    console.log(`✅ Broadcast terjadwal [${scheduleId}] selesai ke ${groupIds.length} grup.`);
+                    await sock.sendMessage(adminJid, { text: `✅ Broadcast terjadwal [${scheduleId}] selesai ke ${groupIds.length} grup.` });
+                } catch (error) {
+                    console.error(`❌ Error saat broadcast terjadwal [${scheduleId}]:`, error.message);
+                    await sock.sendMessage(adminJid, { text: `❌ Gagal broadcast terjadwal [${scheduleId}]: ${error.message}` });
+                }
+            });
+        }
+    });
+}
+
+// Fungsi utama untuk koneksi WhatsApp
 async function startSock() {
     const { state, saveCreds } = await useMultiFileAuthState('auth');
     const sock = makeWASocket({
@@ -128,46 +155,25 @@ async function startSock() {
         const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
         if (!text) return;
 
-        await addNewLink(sock, text);
+        await addNewLink(text);
 
-        const from = msg.key.participant || msg.key.remoteJid;
-        const command = text.trim();
+        // Kirim link ke admin jika sudah mencapai threshold
+        const unsentCount = await GroupLink.count({ where: { is_sent_to_admin: false } });
+        if (unsentCount >= groupThreshold) {
+            const unsent = await GroupLink.findAll({
+                where: { is_sent_to_admin: false },
+                limit: groupThreshold
+            });
 
-        if (from === adminJid) {
-            if (command.startsWith('/bcast')) {
-                broadcastState.waiting = true;
-                broadcastState.lastActivity = Date.now();
-                await sock.sendMessage(from, { text: 'Kirimkan pesan yang ingin di broadcast (teks/gambar).\nKetik /cancel untuk membatalkan.' });
-                return;
-            }
+            const list = unsent.map((l, i) => `${i + 1}. ${l.link}`).join('\n');
+            const message = `📥 Link grup terkumpul:\n\n${list}`;
 
-            if (command.startsWith('/cancel')) {
-                broadcastState.waiting = false;
-                await sock.sendMessage(from, { text: 'Broadcast dibatalkan.' });
-                return;
-            }
-
-            if (broadcastState.waiting) {
-                if (!text) {
-                    await sock.sendMessage(from, { text: '❗Hanya pesan teks yang didukung.' });
-                    return;
-                }
-
-                broadcastState.lastActivity = Date.now();
-                await sock.sendMessage(from, { text: 'Broadcast dimulai...' });
-
-                try {
-                    const groups = await sock.groupFetchAllParticipating();
-                    const groupIds = Object.keys(groups);
-
-                    await broadcastText(sock, text, groupIds, groups);
-                    await sock.sendMessage(from, { text: `Broadcast selesai ke ${groupIds.length} grup.` });
-                } catch (error) {
-                    console.error('❌ Error saat broadcast:', error.message);
-                    await sock.sendMessage(from, { text: `❌ Gagal broadcast: ${error.message}` });
-                } finally {
-                    broadcastState.waiting = false;
-                }
+            try {
+                await sock.sendMessage(adminJid, { text: message });
+                await GroupLink.update({ is_sent_to_admin: true }, { where: { is_sent_to_admin: false } });
+                console.log(`📤 ${unsent.length} link dikirim ke admin.`);
+            } catch (err) {
+                console.error('❌ Gagal kirim ke admin:', err.message);
             }
         }
     });
@@ -180,6 +186,7 @@ async function startSock() {
 
         if (connection === 'open') {
             console.log('✅ Koneksi WhatsApp aktif');
+            setupScheduledBroadcasts(sock);
         } else if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             console.log('🔌 Koneksi terputus', shouldReconnect ? ', mencoba reconnect...' : '');
