@@ -1,15 +1,25 @@
+import './database/setup.js';
 import makeWASocket, { useMultiFileAuthState, DisconnectReason } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
+import qrcode from 'qrcode-terminal';
+import pino from 'pino';
 
 async function startSock() {
     const { state, saveCreds } = await useMultiFileAuthState('auth');
     const sock = makeWASocket({
         auth: state,
-        printQRInTerminal: true
+        printQRInTerminal: false,
+        logger: pino({ level: 'info' })
     });
 
     sock.ev.on('connection.update', update => {
-        const { connection, lastDisconnect } = update;
+        const { connection, qr, lastDisconnect } = update;
+
+        if (qr) {
+            console.log('Scan QR berikut:');
+            qrcode.generate(qr, { small: true });
+        }
+
         if (connection === 'close') {
             const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
             console.log('Koneksi terputus', lastDisconnect?.error, ', reconnecting ', shouldReconnect);
