@@ -3,6 +3,9 @@ FROM node:22-alpine AS build
 
 WORKDIR /usr/src/app
 
+# Install git & build tools
+RUN apk add --no-cache git python3 make g++
+
 # Install pnpm
 RUN npm install -g pnpm
 
@@ -10,7 +13,7 @@ RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN pnpm install --prod
+RUN pnpm install && pnpm approve-builds --prod
 
 # Copy application code
 COPY . .
@@ -20,7 +23,7 @@ FROM node:22-alpine
 
 WORKDIR /usr/src/app
 
-# Copy from build stage
+# Copy only what we need from build
 COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app ./
 
