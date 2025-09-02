@@ -1,4 +1,4 @@
-import '@/database/setup.js';
+import '@/database/setup';
 import dotenv from 'dotenv';
 dotenv.config();
 import makeWASocket, { useMultiFileAuthState, DisconnectReason } from '@whiskeysockets/baileys';
