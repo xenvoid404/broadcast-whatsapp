@@ -24,11 +24,11 @@ FROM node:22-alpine
 WORKDIR /usr/src/app
 
 # Copy only what we need from build
-COPY --from = build /usr/src/app/node_modules ./node_modules
-COPY --from = build /usr/src/app ./
+COPY --from=build /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app ./
 
 # Set environment variables
-ENV NODE_ENV = production
+ENV NODE_ENV=production
 
 # Expose port (if needed)
 # EXPOSE 3000
