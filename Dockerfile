@@ -1,26 +1,26 @@
 # Stage 1: Build
-FROM node:18-alpine AS build
+FROM node:22-alpine AS build
 
 WORKDIR /usr/src/app
 
-# Install build tools needed for some packages
-RUN apk add --no-cache python3 make g++
+# Install git & build tools
+RUN apk add --no-cache git python3 make g++
 
-# Install pnpm
+# Install pnpm version specified in package.json
 RUN npm install -g pnpm@8
 
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-# Using --unsafe-perm to allow build scripts to run
-RUN pnpm install --prod --unsafe-perm
+# Build scripts are allowed in package.json
+RUN pnpm install --prod
 
 # Copy application code
 COPY . .
 
 # Stage 2: Production
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /usr/src/app
 

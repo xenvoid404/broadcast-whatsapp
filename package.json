@@ -11,6 +11,11 @@
     "keywords": [],
     "author": "",
     "license": "ISC",
+    "pnpm": {
+        "allowedBuildScripts": [
+            "*
+        ]
+    },
     "packageManager": "pnpm@10.13.1",
     "dependencies": {
         "@whiskeysockets/baileys": "^6.7.19",
