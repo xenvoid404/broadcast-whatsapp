@@ -1,8 +1,17 @@
-import './database/setup.js';
+import '@/database/setup.js';
+import dotenv from 'dotenv';
+dotenv.config();
 import makeWASocket, { useMultiFileAuthState, DisconnectReason } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import qrcode from 'qrcode-terminal';
 import pino from 'pino';
+
+const adminNumber = process.env.ADMIN_NUMBER;
+
+if (!adminNumber) {
+    console.error('Nomor admin belum diset di .env');
+    process.exit(1);
+}
 
 async function startSock() {
     const { state, saveCreds } = await useMultiFileAuthState('auth');
