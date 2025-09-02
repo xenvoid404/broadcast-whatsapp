@@ -1,36 +1,37 @@
 # Stage 1: Build
-FROM node:22-alpine AS build
+FROM node:18-alpine AS build
 
 WORKDIR /usr/src/app
 
-# Install git & build tools
-RUN apk add --no-cache git python3 make g++
+# Install build tools needed for some packages
+RUN apk add --no-cache python3 make g++
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@8
 
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN pnpm install --prod \ && pnpm approve-builds --all \ && pnpm rebuild -r
+# Using --unsafe-perm to allow build scripts to run
+RUN pnpm install --prod --unsafe-perm
 
 # Copy application code
 COPY . .
 
 # Stage 2: Production
-FROM node:22-alpine
+FROM node:18-alpine
 
 WORKDIR /usr/src/app
 
-# Copy only what we need from build
+# Copy dependencies and application code from build stage
 COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app ./
+COPY --from=build /usr/src/app/package.json ./
+COPY --from=build /usr/src/app/app.js ./
+COPY --from=build /usr/src/app/database ./database
+COPY --from=build /usr/src/app/messages ./messages
 
 # Set environment variables
 ENV NODE_ENV=production
-
-# Expose port (if needed)
-# EXPOSE 3000
 
 CMD ["node", "app.js"]
