@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "ts-node -r tsconfig-paths/register app.ts",
+    "start": "node --loader tsconfig-paths/loader --loader ts-node/esm app.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
