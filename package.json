@@ -1,31 +1,23 @@
 {
-  "name": "bc",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "start": "node --loader tsconfig-paths/loader --loader ts-node/esm app.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.13.1",
-  "dependencies": {
-    "@hapi/boom": "^10.0.1",
-    "@whiskeysockets/baileys": "^6.7.19",
-    "dotenv": "^17.2.1",
-    "pino": "^9.9.0",
-    "qrcode-terminal": "^0.12.0",
-    "sequelize": "^6.37.7",
-    "sqlite3": "^5.1.7"
-  },
-  "devDependencies": {
-    "@types/node": "^24.3.0",
-    "@types/qrcode-terminal": "^0.12.2",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.2"
-  }
+    "name": "bc",
+    "version": "1.0.0",
+    "description": "",
+    "main": "app.js",
+    "type": "module",
+    "scripts": {
+        "start": "node app.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "packageManager": "pnpm@10.13.1",
+    "dependencies": {
+        "@hapi/boom": "^10.0.1",
+        "@whiskeysockets/baileys": "^6.7.19",
+        "dotenv": "^17.2.1",
+        "pino": "^9.9.0",
+        "qrcode-terminal": "^0.12.0",
+        "sequelize": "^6.37.7",
+        "sqlite3": "^5.1.7"
+    }
 }

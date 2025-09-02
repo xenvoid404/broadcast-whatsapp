@@ -1,5 +1,5 @@
 import { DataTypes } from 'sequelize';
-import { sequelize } from '@/database/setup';
+import { sequelize } from '../setup.js';
 
 export const Group = sequelize.define('group', {
     link: {
