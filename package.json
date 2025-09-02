@@ -12,9 +12,7 @@
     "author": "",
     "license": "ISC",
     "pnpm": {
-        "allowedBuildScripts": [
-            "*
-        ]
+        "allowedBuildScripts": ["*"]
     },
     "packageManager": "pnpm@10.13.1",
     "dependencies": {

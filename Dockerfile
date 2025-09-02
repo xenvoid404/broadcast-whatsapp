@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 RUN apk add --no-cache git python3 make g++
 
 # Install pnpm version specified in package.json
-RUN npm install -g pnpm@8
+RUN npm install -g pnpm
 
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
