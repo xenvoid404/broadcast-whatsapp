@@ -1,0 +1,10 @@
+services:
+    app:
+        build: .
+        container_name: bcast
+        restart: unless-stopped
+        env_file:
+            - .env
+        volumes:
+            - ./auth:/usr/src/app/auth
+            - ./database:/usr/src/app/database
