@@ -139,6 +139,7 @@ function setupScheduledBroadcasts(sock) {
             cron.schedule(schedule, async () => {
                 logger.info(`Menjalankan broadcast terjadwal [${scheduleId}]...`);
                 try {
+                    await sock.sendMessage(adminNumber, { text: `🚀 Memulai broadcast terjadwal [${scheduleId}]...` });
                     const message = fs.readFileSync(absoluteMessagePath, 'utf-8');
                     if (!message.trim()) {
                         logger.warn(`File pesan untuk jadwal [${scheduleId}] kosong.`);
@@ -168,10 +169,8 @@ async function sendCollectedLinksToAdmin(sock) {
     try {
         const unsent = await Group.findAll({ where: { sent: false }, limit: groupThreshold });
         if (unsent.length >= groupThreshold) {
-            const list = unsent.map((l, i) => `${i + 1}. ${l.link}`).join('n');
-            const message = `📥 Link grup terkumpul:
-
-${list}`;
+            const list = unsent.map((l, i) => `${i + 1}. ${l.link}`).join('\n');
+            const message = `📥 Link grup terkumpul:\n\n${list}`;
 
             await sock.sendMessage(adminNumber, { text: message });
             await Group.update({ sent: true }, { where: { id: unsent.map(g => g.id) } });
