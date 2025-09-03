@@ -2,11 +2,9 @@ FROM node:22-slim
 WORKDIR /usr/src/app
 COPY package*.json ./
 COPY pnpm*.yaml ./
-RUN apt-get update && apt-get install -y --no-install-recommends \
-git \
-python3 \
-make \
-g++ \ && rm -rf /var/lib/apt/lists/*
+RUN apt update
+RUN apt install -y --no-install-recommends git python3 make g++
+RUN rm -rf /var/lib/apt/lists/*
 RUN npm install -g pnpm
 RUN pnpm install
 COPY . .
