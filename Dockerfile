@@ -1,8 +1,12 @@
 FROM node:22-slim
 WORKDIR /usr/src/app
-RUN apk add --no-cache git python3 make g++
-COPY package*.json ./ 
+COPY package*.json ./
 COPY pnpm*.yaml ./
+RUN apt-get update && apt-get install -y --no-install-recommends \
+git \
+python3 \
+make \
+g++ \ && rm -rf /var/lib/apt/lists/*
 RUN npm install -g pnpm
 RUN pnpm install
 COPY . .
