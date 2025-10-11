@@ -1,4 +1,3 @@
-import './database/setup.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -8,8 +7,6 @@ import pino from 'pino';
 import cron from 'node-cron';
 import fs from 'fs';
 import path from 'path';
-
-import { Group } from './database/models/group.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
@@ -23,54 +20,14 @@ if (!adminNumber) {
     process.exit(1);
 }
 
-/**
- * Memberikan jeda waktu eksekusi.
- * @param {number} ms - Waktu jeda dalam milidetik.
- */
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**
- * Menghasilkan jeda waktu acak dalam rentang yang ditentukan.
- * @returns {number} - Waktu jeda acak dalam milidetik.
- */
 function randomDelay() {
     return Math.floor(Math.random() * (delayMax - delayMin + 1)) + delayMin;
 }
 
-/**
- * Menambahkan link grup baru ke database jika belum ada.
- * @param {string} text - Teks yang mungkin berisi link grup WhatsApp.
- */
-async function addNewLink(text) {
-    const regex = /https?:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]{22}/g;
-    const links = text.match(regex);
-    if (!links) return;
-
-    for (const link of links) {
-        try {
-            const [group, created] = await Group.findOrCreate({
-                where: { link },
-                defaults: { link, sent: false }
-            });
-
-            if (created) {
-                logger.info(`[Link Baru] Ditemukan dan disimpan: ${group.link}`);
-            }
-        } catch (error) {
-            logger.error(`[DB Error] Gagal menyimpan link ${link}:`, error);
-        }
-    }
-}
-
-/**
- * Mengirimkan pesan broadcast ke daftar grup.
- * @param {import('@whiskeysockets/baileys').WASocket} sock - Instance socket Baileys.
- * @param {string} text - Teks yang akan dikirim.
- * @param {string[]} groupIds - Array ID grup.
- * @param {object} groups - Objek metadata grup.
- */
 async function broadcastText(sock, text, groupIds, groups) {
     for (const groupId of groupIds) {
         try {
@@ -107,10 +64,6 @@ async function broadcastText(sock, text, groupIds, groups) {
     }
 }
 
-/**
- * Mengatur jadwal broadcast berdasarkan konfigurasi di .env.
- * @param {import('@whiskeysockets/baileys').WASocket} sock - Instance socket Baileys.
- */
 function setupScheduledBroadcasts(sock) {
     Object.keys(process.env).forEach(key => {
         if (key.startsWith('BROADCAST_SCHEDULE_')) {
@@ -161,29 +114,6 @@ function setupScheduledBroadcasts(sock) {
     });
 }
 
-/**
- * Mengirimkan link grup yang terkumpul ke admin.
- * @param {import('@whiskeysockets/baileys').WASocket} sock - Instance socket Baileys.
- */
-async function sendCollectedLinksToAdmin(sock) {
-    try {
-        const unsent = await Group.findAll({ where: { sent: false }, limit: groupThreshold });
-        if (unsent.length >= groupThreshold) {
-            const list = unsent.map((l, i) => `${i + 1}. ${l.link}`).join('\n');
-            const message = `📥 Link grup terkumpul:\n\n${list}`;
-
-            await sock.sendMessage(adminNumber, { text: message });
-            await Group.update({ sent: true }, { where: { id: unsent.map(g => g.id) } });
-            logger.info(`${unsent.length} link dikirim ke admin.`);
-        }
-    } catch (err) {
-        logger.error('Gagal kirim ke admin:', err.message);
-    }
-}
-
-/**
- * Fungsi utama untuk memulai koneksi WhatsApp.
- */
 async function startSock() {
     try {
         const { state, saveCreds } = await useMultiFileAuthState('auth');
@@ -221,8 +151,19 @@ async function startSock() {
             const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
             if (!text) return;
 
-            await addNewLink(text);
-            await sendCollectedLinksToAdmin(sock);
+            const groupInviteRegex = /https?:\/\/chat\.whatsapp\.com\/([A-Za-z0-9]{22})/;
+            const match = text.match(groupInviteRegex);
+
+            if (match && match[1]) {
+                const inviteCode = match[1];
+                logger.info(`[Auto Join] Ditemukan kode undangan: ${inviteCode}`);
+                try {
+                    await sock.groupAcceptInvite(inviteCode);
+                    logger.info(`[Auto Join] Berhasil bergabung dengan grup: ${inviteCode}`);
+                } catch (error) {
+                    logger.error(`[Auto Join] Gagal bergabung dengan grup ${inviteCode}:`, error);
+                }
+            }
         });
 
         sock.ev.on('creds.update', saveCreds);
