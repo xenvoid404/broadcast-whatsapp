@@ -1,0 +1,28 @@
+{
+    "name": "Broadcast WhatsApp",
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx --watch src/index.ts",
+        "types": "tsc --noEmit",
+        "format": "prettier --write .",
+        "build": "tsup",
+        "start": "TZ=Asia/Jakarta node dist/index.js",
+        "db:setup": "tsx src/db/setup.ts",
+        "db:seed": "tsx src/db/seeder.ts"
+    },
+    "dependencies": {
+        "better-sqlite3": "^12.10.0",
+        "pino": "^10.3.1"
+    },
+    "devDependencies": {
+        "@types/better-sqlite3": "^7.6.13",
+        "@types/node": "^25.9.1",
+        "prettier": "^3.8.3",
+        "prettier-plugin-organize-imports": "^4.3.0",
+        "tsup": "^8.5.1",
+        "tsx": "^4.22.4",
+        "typescript": "^6.0.3"
+    }
+}

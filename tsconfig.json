@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "lib": ["ESNext"],
+
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "paths": {
+            "@/*": ["./src/*"]
+        },
+
+        "strict": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+
+        "declaration": true,
+        "sourceMap": true
+    },
+    "include": ["src/**/*"],
+    "exclude": [".git", ".github", "dist", "drizzle", "log", "node_modules", "public"]
+}
