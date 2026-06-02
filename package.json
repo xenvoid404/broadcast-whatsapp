@@ -4,15 +4,16 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "dev": "tsx --watch src/index.ts",
+        "dev": "tsx --env-file=.env --watch src/index.ts",
         "types": "tsc --noEmit",
         "format": "prettier --write .",
         "build": "tsup",
-        "start": "TZ=Asia/Jakarta node dist/index.js",
+        "start": "TZ=Asia/Jakarta node --env-file=.env dist/index.js",
         "db:setup": "tsx src/db/setup.ts",
         "db:seed": "tsx src/db/seeder.ts"
     },
     "dependencies": {
+        "@whiskeysockets/baileys": "7.0.0-rc13",
         "better-sqlite3": "^12.10.0",
         "pino": "^10.3.1"
     },

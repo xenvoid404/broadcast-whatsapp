@@ -1,6 +1,11 @@
 data
+dist
 node_modules
 
 *db
+*dm-shm
+*db-wal
 *.db
+*.db-shm
+*.db-wal
 .env

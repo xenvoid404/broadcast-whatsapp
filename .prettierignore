@@ -1,5 +1,7 @@
 .git/
-.github/
+assets/
+data/
+dist/
 node_modules/
 
 pnpm-lock.yaml

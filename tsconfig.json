@@ -21,5 +21,5 @@
         "sourceMap": true
     },
     "include": ["src/**/*"],
-    "exclude": [".git", ".github", "dist", "drizzle", "log", "node_modules", "public"]
+    "exclude": [".git", "assets", "data", "dist", "node_modules"]
 }
