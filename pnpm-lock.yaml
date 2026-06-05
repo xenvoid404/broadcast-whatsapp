@@ -14,6 +14,9 @@ importers:
       better-sqlite3:
         specifier: ^12.10.0
         version: 12.10.0
+      node-cron:
+        specifier: ^4.2.1
+        version: 4.2.1
       pino:
         specifier: ^10.3.1
         version: 10.3.1
@@ -977,6 +980,10 @@ packages:
   node-abi@3.92.0:
     resolution: {integrity: sha512-KdHvFWZjEKDf0cakgFjebl371GPsISX2oZHcuyKqM7DtogIsHrqKeLTo8wBHxaXRAQlY2PsPlZmfo+9ZCxEREQ==}
     engines: {node: '>=10'}
+
+  node-cron@4.2.1:
+    resolution: {integrity: sha512-lgimEHPE/QDgFlywTd8yTR61ptugX3Qer29efeyWw2rv259HtGBNn1vZVmp8lB9uo9wC0t/AT4iGqXxia+CJFg==}
+    engines: {node: '>=6.0.0'}
 
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
@@ -1967,6 +1974,8 @@ snapshots:
   node-abi@3.92.0:
     dependencies:
       semver: 7.8.1
+
+  node-cron@4.2.1: {}
 
   object-assign@4.1.1: {}
 

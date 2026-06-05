@@ -1,91 +1,107 @@
 import { configQ, messageQ, scheduleQ } from '@/db/queries';
 import { logger } from '@/lib/logger';
-import { isTimeReached, now, randomTime, today } from '@/lib/utils'; // Tambahkan today()
+import { isTimeReached, now, randomTime, today } from '@/lib/utils';
 import type { WASocket } from '@whiskeysockets/baileys';
-import fs from 'fs';
+import { existsSync, readFileSync } from 'fs';
+import cron, { ScheduledTask } from 'node-cron';
+
+let isProcessing = false;
+let minuteTask: ScheduledTask | null = null;
+let midnightTask: ScheduledTask | null = null;
 
 export async function generateDailySchedules(sock: WASocket): Promise<void> {
-    const cfg = configQ.get() as { start: number; end: number; link_threshold: number } | undefined;
-    if (!cfg) return;
-    let groups: Record<string, any> = {};
+    const cfg = configQ.get();
+    if (!cfg) {
+        logger.warn('Config tidak ditemukan, generate jadwal dibatalkan');
+        return;
+    }
+    let groups: Record<string, { id: string; subject: string }>;
     try {
-        groups = await sock.groupFetchAllParticipating();
+        groups = (await sock.groupFetchAllParticipating()) as Record<string, { id: string; subject: string }>;
     } catch (err) {
-        logger.error({ err }, 'Gagal fetch grup');
+        logger.error({ err }, 'Gagal fetch daftar grup dari WhatsApp');
         return;
     }
     const groupList = Object.values(groups);
     if (!groupList.length) {
-        logger.info('Tidak ada grup yang diikuti');
+        logger.info('Bot tidak mengikuti grup manapun, generate jadwal dilewati');
         return;
     }
-    const rows: { group_jid: string; scheduled_time: string; scheduled_date: string }[] = [];
+    const newRows: Array<{ groupJid: string; scheduledTime: string }> = [];
     for (const g of groupList) {
         if (scheduleQ.todayByGroup(g.id)) continue;
-        rows.push({
-            group_jid: g.id,
-            scheduled_time: randomTime(cfg.start, cfg.end),
-            scheduled_date: today(),
+        newRows.push({
+            groupJid: g.id,
+            scheduledTime: randomTime(cfg.start, cfg.end),
         });
     }
-    if (!rows.length) {
-        logger.info('Semua grup sudah punya jadwal hari ini');
+    if (!newRows.length) {
+        logger.info('Semua grup sudah memiliki jadwal untuk hari ini');
         return;
     }
-    scheduleQ.insertMany(rows);
-    logger.info({ count: rows.length }, '📅 Jadwal broadcast dibuat');
-    rows.forEach((r) => logger.info(`  → ${r.group_jid} jam ${r.scheduled_time}`));
+    scheduleQ.insertMany(newRows);
+    logger.info({ count: newRows.length, date: today() }, '📅 Jadwal broadcast hari ini berhasil dibuat');
+    for (const r of newRows) {
+        logger.debug({ groupJid: r.groupJid, scheduledTime: r.scheduledTime }, 'Jadwal grup');
+    }
 }
 
 async function sendPending(sock: WASocket): Promise<void> {
-    const pending = scheduleQ.getPendingToday() as any[];
+    const pending = scheduleQ.getPendingToday();
     if (!pending.length) return;
-    const msg = messageQ.get() as any;
-    if (!msg?.text) return;
-    const imageBuffer = msg.image && fs.existsSync(msg.image) ? fs.readFileSync(msg.image) : null;
+    const msg = messageQ.get();
+    if (!msg?.text) {
+        logger.warn('Pesan broadcast belum diatur, pengiriman dilewati');
+        return;
+    }
+    const imageBuffer = msg.image && existsSync(msg.image) ? readFileSync(msg.image) : null;
     for (const s of pending) {
         if (!isTimeReached(s.scheduled_time)) continue;
         try {
-            if (imageBuffer) {
-                await sock.sendMessage(s.group_jid, { image: imageBuffer, caption: msg.text }); // Ubah ke snake_case
-            } else {
-                await sock.sendMessage(s.group_jid, { text: msg.text }); // Ubah ke snake_case
-            }
+            if (imageBuffer) await sock.sendMessage(s.group_jid, { image: imageBuffer, caption: msg.text });
+            else await sock.sendMessage(s.group_jid, { text: msg.text });
             scheduleQ.setStatus(s.id, 'sent', now());
-            logger.info({ group_jid: s.group_jid, time: s.scheduled_time }, '✅ Terkirim');
+            logger.info({ groupJid: s.group_jid, scheduledTime: s.scheduled_time }, '✅ Broadcast terkirim');
         } catch (err) {
             scheduleQ.setStatus(s.id, 'failed');
-            logger.error({ group_jid: s.group_jid, err }, '❌ Gagal kirim');
+            logger.error({ err, groupJid: s.group_jid }, '❌ Gagal mengirim broadcast ke grup');
         }
     }
 }
 
-let isProcessing = false;
-let cronInterval: NodeJS.Timeout | null = null;
 export function startCrons(sock: WASocket): void {
-    if (cronInterval) {
-        clearInterval(cronInterval);
-        logger.info('🔄 Restarting cron interval karena koneksi ulang...');
+    if (minuteTask) {
+        minuteTask.stop();
+        logger.info('Cron menit lama dihentikan');
     }
-    cronInterval = setInterval(async () => {
+    if (midnightTask) {
+        midnightTask.stop();
+        logger.info('Cron tengah malam lama dihentikan');
+    }
+    minuteTask = cron.schedule('* * * * *', async () => {
         if (isProcessing) {
-            logger.warn('Tugas cron terlewati karena proses sebelumnya belum selesai.');
+            logger.warn('Cron tick dilewati — proses sebelumnya masih berjalan');
             return;
         }
         isProcessing = true;
         try {
             await sendPending(sock);
-            const date = new Date();
-            if (date.getHours() === 0 && date.getMinutes() === 0) {
-                logger.info('🌙 Midnight cron — generate jadwal baru');
-                scheduleQ.cleanOld();
-                await generateDailySchedules(sock);
-            }
-        } catch (error) {
-            logger.error({ error }, 'Error pada saat eksekusi cron native');
+        } catch (err) {
+            logger.error({ err }, 'Error tidak terduga saat eksekusi pengiriman broadcast');
         } finally {
             isProcessing = false;
         }
-    }, 60000);
-    logger.info('✅ Native cron jobs dimulai / diperbarui');
+    });
+    midnightTask = cron.schedule('0 0 * * *', () => {
+        setTimeout(async () => {
+            try {
+                logger.info('🌙 Midnight cron — membersihkan jadwal lama dan membuat jadwal baru');
+                scheduleQ.cleanOld();
+                await generateDailySchedules(sock);
+            } catch (err) {
+                logger.error({ err }, 'Error saat eksekusi midnight cron');
+            }
+        }, 5000);
+    });
+    logger.info('✅ Node-cron jobs dimulai');
 }

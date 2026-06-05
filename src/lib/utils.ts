@@ -1,6 +1,6 @@
-export const now = () => new Date().toISOString();
-export const today = () => new Date().toISOString().split('T')[0];
-export const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+export const now = (): string => new Date().toISOString();
+export const today = (): string => new Date().toISOString().split('T')[0];
+export const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 export function randomTime(startHour: number, endHour: number): string {
     const totalMins = (endHour - startHour) * 60;

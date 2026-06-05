@@ -7,6 +7,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-    logger.error({ err }, 'Fatal error');
+    logger.error({ err }, 'Fatal error — proses dihentikan');
     process.exit(1);
 });

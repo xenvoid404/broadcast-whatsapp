@@ -1,4 +1,7 @@
-import { envConfig } from '@/config';
+import { config } from '@/config';
 import pino from 'pino';
 
-export const logger = pino({ level: envConfig.log.level });
+export const logger = pino({
+    level: config.logLevel,
+    base: { bot: config.phoneNumber },
+});
