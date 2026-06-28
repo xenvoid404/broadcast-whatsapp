@@ -1,14 +1,17 @@
 {
     "name": "Broadcast WhatsApp",
     "private": true,
-    "version": "2.0.0",
+    "version": "3.0.0",
     "type": "module",
     "scripts": {
-        "dev": "tsx --watch src/index.ts",
+        "dev": "tsx watch --env-file=.env src/index.ts",
         "build": "tsup",
-        "start": "node dist/index.js",
+        "start": "node --env-file=.env dist/index.js",
         "types": "tsc --noEmit",
         "format": "prettier --write .",
+        "db:generate": "drizzle-kit generate",
+        "db:migrate": "drizzle-kit migrate",
+        "db:push": "drizzle-kit push",
         "pm2:start": "pm2 start ecosystem.config.cjs",
         "pm2:stop": "pm2 stop ecosystem.config.cjs",
         "pm2:restart": "pm2 restart ecosystem.config.cjs",
@@ -17,12 +20,17 @@
     "dependencies": {
         "@whiskeysockets/baileys": "7.0.0-rc13",
         "better-sqlite3": "^12.10.0",
+        "dayjs": "^1.11.21",
+        "drizzle-orm": "^0.45.2",
         "node-cron": "^4.2.1",
-        "pino": "^10.3.1"
+        "pino": "^10.3.1",
+        "qrcode": "^1.5.4"
     },
     "devDependencies": {
         "@types/better-sqlite3": "^7.6.13",
         "@types/node": "^25.9.1",
+        "@types/qrcode": "^1.5.6",
+        "drizzle-kit": "^0.31.10",
         "prettier": "^3.8.3",
         "prettier-plugin-organize-imports": "^4.3.0",
         "tsup": "^8.5.1",
