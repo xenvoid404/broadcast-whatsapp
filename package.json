@@ -19,19 +19,19 @@
     },
     "dependencies": {
         "@whiskeysockets/baileys": "7.0.0-rc13",
-        "better-sqlite3": "^12.10.0",
+        "better-sqlite3": "^12.11.1",
         "dayjs": "^1.11.21",
         "drizzle-orm": "^0.45.2",
-        "node-cron": "^4.2.1",
+        "node-cron": "^4.5.0",
         "pino": "^10.3.1",
         "qrcode": "^1.5.4"
     },
     "devDependencies": {
         "@types/better-sqlite3": "^7.6.13",
-        "@types/node": "^25.9.1",
+        "@types/node": "^25.9.4",
         "@types/qrcode": "^1.5.6",
         "drizzle-kit": "^0.31.10",
-        "prettier": "^3.8.3",
+        "prettier": "^3.9.1",
         "prettier-plugin-organize-imports": "^4.3.0",
         "tsup": "^8.5.1",
         "tsx": "^4.22.4",

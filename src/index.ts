@@ -18,7 +18,7 @@ export async function bootstrap(retries: number = 0): Promise<void> {
         const sock: WASocket = makeWASocket({
             auth: state,
             logger: pino({ level: 'silent' }),
-            browser: Browsers.macOS('Google Chrome'),
+            browser: Browsers.ubuntu('Chrome'),
             markOnlineOnConnect: false,
             printQRInTerminal: false,
             cachedGroupMetadata: async (jid) => groupCache.get(jid),
@@ -30,9 +30,8 @@ export async function bootstrap(retries: number = 0): Promise<void> {
         if (envConfig.app.method === 'pairing' && !sock.authState.creds.registered) {
             setTimeout(async () => {
                 try {
-                    const phoneNumber = envConfig.app.number.replace(/[^0-9]/g, '');
-                    logger.info({ number: phoneNumber }, 'Meminta kode pairing...');
-                    const code = await sock.requestPairingCode(phoneNumber);
+                    logger.info({ number: envConfig.app.number }, 'Meminta kode pairing...');
+                    const code = await sock.requestPairingCode(envConfig.app.number);
                     logger.info(`Kode pairing: ${code}`);
                 } catch (err) {
                     logger.error({ err }, 'Gagal mendapatkan kode pairing dari server');

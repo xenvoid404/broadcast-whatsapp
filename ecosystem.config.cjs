@@ -13,9 +13,11 @@ const apps = [
         env: {
             NODE_ENV: 'production',
             TZ: 'Asia/Jakarta',
+            APP_METHOD: 'pairing',
             APP_NUMBER: '6281392842481',
-            DB_NAME: '6281392842481.db',
             LOG_LEVEL: 'info',
+            DB_URL: 'file:./data/6281392842481.db',
+            DB_NAME: '6281392842481.db',
         },
     },
     {
@@ -29,9 +31,11 @@ const apps = [
         env: {
             NODE_ENV: 'production',
             TZ: 'Asia/Jakarta',
-            APP_NUMBER: '621219171144',
-            DB_NAME: '621219171144.db',
+            APP_METHOD: 'pairing',
+            APP_NUMBER: '6285135391938',
             LOG_LEVEL: 'info',
+            DB_URL: 'file:./data/6285135391938.db',
+            DB_NAME: '6285135391938.db',
         },
     },
     {
@@ -45,9 +49,11 @@ const apps = [
         env: {
             NODE_ENV: 'production',
             TZ: 'Asia/Jakarta',
-            APP_NUMBER: '6285135391938',
-            DB_NAME: '6285135391938.db',
+            APP_METHOD: 'pairing',
+            APP_NUMBER: '6281219171144',
             LOG_LEVEL: 'info',
+            DB_URL: 'file:./data/6281219171144.db',
+            DB_NAME: '6281219171144.db',
         },
     },
 ];
