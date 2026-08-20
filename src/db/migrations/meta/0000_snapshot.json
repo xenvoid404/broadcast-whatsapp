@@ -63,9 +63,7 @@
       "indexes": {
         "links_url_unique": {
           "name": "links_url_unique",
-          "columns": [
-            "url"
-          ],
+          "columns": ["url"],
           "isUnique": true
         }
       },
